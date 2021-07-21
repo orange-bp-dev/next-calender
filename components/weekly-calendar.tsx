@@ -12,7 +12,7 @@ import "tui-time-picker/dist/tui-time-picker.css"
 const start = new Date()
 const end = new Date(new Date().setMinutes(start.getMinutes() + 30))
 
-//取得してきたデータ
+//取得してきたスケジュールのデータ
 const schedules: ISchedule[] = [
   {
     calendarId: "1",
@@ -36,6 +36,7 @@ const schedules: ISchedule[] = [
   }
 ]
 
+//設定できるカレンダーの種類を定義
 const calendars: ICalendarInfo[] = [
   {
     id: "1",
@@ -56,10 +57,20 @@ const calendars: ICalendarInfo[] = [
 ]
 
 export const CodeSandBoxCalendar = () => {
+  //ずっとnull
   const cal = useRef(null)
-  console.log("calの挙動", cal)
+  const [defaultStartTime, setDefaultStartTime] = useState("")
+  const [defaultEndTime, setDefaultEndTime] = useState("")
+  const [changedStartTime, setChangedStartTime] = useState("")
+  const [changedEndTime, setChangedEndTime] = useState("")
 
   const onClickSchedule = useCallback((e) => {
+    console.log("クリックしたスケジュールの情報(開始)", e.schedule.start._date)
+    console.log("クリックしたスケジュールの情報(開始)", e.schedule.end._date)
+
+    setDefaultStartTime(`${e.schedule.start._date}`)
+    setDefaultEndTime(`${e.schedule.end._date}`)
+
     //２つとも同じ
     const { calendarId, id } = e.schedule
 
@@ -72,6 +83,8 @@ export const CodeSandBoxCalendar = () => {
     // const el = cal.current.calendarInst.getElement(id, calendarId)
     // console.log("default-----------", e, el.getBoundingClientRect())
   }, [])
+
+  //useState
 
   const onBeforeCreateSchedule = useCallback((scheduleData) => {
     console.log("作成するまえにscheduleData-------------", scheduleData)
@@ -91,7 +104,7 @@ export const CodeSandBoxCalendar = () => {
       state: scheduleData.state
     }
 
-    cal.current.calendarInst.createSchedules([schedule])
+    // cal.current.calendarInst.createSchedules([schedule])
   }, [])
 
   const onBeforeDeleteSchedule = useCallback((res) => {
@@ -99,15 +112,25 @@ export const CodeSandBoxCalendar = () => {
 
     const { id, calendarId } = res.schedule
 
-    cal.current.calendarInst.deleteSchedule(id, calendarId)
+    // cal.current.calendarInst.deleteSchedule(id, calendarId)
   }, [])
 
   const onBeforeUpdateSchedule = useCallback((e) => {
     console.log("変更する前に", e)
+    console.log("変更する前に", e.changes.start._date)
 
-    const { schedule, changes } = e
+    setChangedStartTime(`${e.changes.start._date}`)
+    setChangedEndTime(`${e.changes.end._date}`)
 
-    cal.current.calendarInst.updateSchedule(schedule.id, schedule.calendarId, changes)
+    // ドラッグアンドドロップしてドロップしたときに作動する
+    // e内でstart, endが取得できる
+
+    // Updateリクエスト発火
+    // カレンダーの横に現在設定している設定している値と、変更する値をState保持・表示してOKボタンを押したら変更
+
+    // 不要
+    // const { schedule, changes } = e
+    // cal.current.calendarInst.updateSchedule(schedule.id, schedule.calendarId, changes)
   }, [])
 
   function _getFormattedTime(time) {
@@ -124,6 +147,7 @@ export const CodeSandBoxCalendar = () => {
     if (!isAllDay) {
       html.push("<strong>" + _getFormattedTime(schedule.start) + "</strong> ")
     }
+
     if (schedule.isPrivate) {
       html.push('<span class="calendar-font-icon ic-lock-b"></span>')
       html.push(" Private")
@@ -157,7 +181,22 @@ export const CodeSandBoxCalendar = () => {
       <button onClick={() => setUnit("day")}>Daily</button>
       <button onClick={() => setUnit("week")}>Weekly</button>
       <button onClick={() => setUnit("month")}>Monthly</button>
-      <TUICalendar height="1000px" view={unit} useCreationPopup={true} useDetailPopup={true} template={templates} calendars={calendars} schedules={schedules} onClickSchedule={onClickSchedule} onBeforeCreateSchedule={onBeforeCreateSchedule} onBeforeDeleteSchedule={onBeforeDeleteSchedule} onBeforeUpdateSchedule={onBeforeUpdateSchedule} />
+      <div style={{ float: "right" }}>
+        <div>
+          <h2>変更前</h2>
+          <h4>開始{defaultStartTime}</h4>
+          <h4>終了{defaultEndTime}</h4>
+
+          <h2>変更後</h2>
+          <h4>開始{changedStartTime}</h4>
+          <h4>終了{changedEndTime}</h4>
+
+          <button>OK</button>
+        </div>
+        <div style={{ width: "800px", height: "500px" }}>
+          <TUICalendar height="300px" view={unit} useCreationPopup={true} useDetailPopup={true} template={templates} calendars={calendars} schedules={schedules} onClickSchedule={onClickSchedule} onBeforeCreateSchedule={onBeforeCreateSchedule} onBeforeDeleteSchedule={onBeforeDeleteSchedule} onBeforeUpdateSchedule={onBeforeUpdateSchedule} />
+        </div>
+      </div>
     </div>
   )
 }
