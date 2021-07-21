@@ -1,5 +1,5 @@
 import React, { useCallback, useRef } from "react"
-import { CodeSandBoxCalendar } from "../components/calendar"
+import { CodeSandBoxCalendar } from "../components/weekly-calendar"
 
 function CSC() {
   return (

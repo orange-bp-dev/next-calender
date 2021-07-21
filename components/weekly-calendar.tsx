@@ -1,6 +1,6 @@
 import dynamic from "next/dynamic"
-import React, { useCallback, useRef } from "react"
-//import TUICalendar from "@toast-ui/react-calendar"
+import React, { useCallback, useRef, useState } from "react"
+import Calendar from "@toast-ui/react-calendar"
 const TUICalendar = dynamic(() => import("@toast-ui/react-calendar"), { ssr: false })
 import { ISchedule, ICalendarInfo } from "tui-calendar"
 
@@ -11,6 +11,8 @@ import "tui-time-picker/dist/tui-time-picker.css"
 
 const start = new Date()
 const end = new Date(new Date().setMinutes(start.getMinutes() + 30))
+
+//取得してきたデータ
 const schedules: ISchedule[] = [
   {
     calendarId: "1",
@@ -55,17 +57,24 @@ const calendars: ICalendarInfo[] = [
 
 export const CodeSandBoxCalendar = () => {
   const cal = useRef(null)
+  console.log("calの挙動", cal)
 
   const onClickSchedule = useCallback((e) => {
+    //２つとも同じ
     const { calendarId, id } = e.schedule
-    const el = cal.current.calendarInst.getElement(id, calendarId)
-    console.log("onclick schedule", el)
 
-    console.log(e, el.getBoundingClientRect())
+    console.log("e.calendar", e.schedule)
+    //取得できる
+    console.log("calendarId", calendarId)
+    console.log("id", id)
+    //クリックしても初期値のnullが入る
+    console.log("cal", cal)
+    // const el = cal.current.calendarInst.getElement(id, calendarId)
+    // console.log("default-----------", e, el.getBoundingClientRect())
   }, [])
 
   const onBeforeCreateSchedule = useCallback((scheduleData) => {
-    console.log(scheduleData)
+    console.log("作成するまえにscheduleData-------------", scheduleData)
 
     const schedule = {
       id: String(Math.random()),
@@ -86,7 +95,7 @@ export const CodeSandBoxCalendar = () => {
   }, [])
 
   const onBeforeDeleteSchedule = useCallback((res) => {
-    console.log(res)
+    console.log("削除する前に res", res)
 
     const { id, calendarId } = res.schedule
 
@@ -94,7 +103,7 @@ export const CodeSandBoxCalendar = () => {
   }, [])
 
   const onBeforeUpdateSchedule = useCallback((e) => {
-    console.log(e)
+    console.log("変更する前に", e)
 
     const { schedule, changes } = e
 
@@ -136,17 +145,19 @@ export const CodeSandBoxCalendar = () => {
 
   const templates = {
     time: function(schedule) {
-      console.log(schedule)
+      console.log("templatesレンダリング時に表示", schedule)
       return _getTimeTemplate(schedule, false)
     }
   }
+  const [unit, setUnit] = useState("month")
 
   return (
     <div className="App">
       <h1>Welcome to TOAST Ui Calendar</h1>
-
-      {/* <TUICalendar ref={cal} height="1000px" view="week" useCreationPopup={true} useDetailPopup={true} template={templates} calendars={calendars} schedules={schedules} onClickSchedule={onClickSchedule} onBeforeCreateSchedule={onBeforeCreateSchedule} onBeforeDeleteSchedule={onBeforeDeleteSchedule} onBeforeUpdateSchedule={onBeforeUpdateSchedule} /> */}
-      <TUICalendar height="1000px" view="week" useCreationPopup={true} useDetailPopup={true} template={templates} calendars={calendars} schedules={schedules} onClickSchedule={onClickSchedule} onBeforeCreateSchedule={onBeforeCreateSchedule} onBeforeDeleteSchedule={onBeforeDeleteSchedule} onBeforeUpdateSchedule={onBeforeUpdateSchedule} />
+      <button onClick={() => setUnit("day")}>Daily</button>
+      <button onClick={() => setUnit("week")}>Weekly</button>
+      <button onClick={() => setUnit("month")}>Monthly</button>
+      <TUICalendar height="1000px" view={unit} useCreationPopup={true} useDetailPopup={true} template={templates} calendars={calendars} schedules={schedules} onClickSchedule={onClickSchedule} onBeforeCreateSchedule={onBeforeCreateSchedule} onBeforeDeleteSchedule={onBeforeDeleteSchedule} onBeforeUpdateSchedule={onBeforeUpdateSchedule} />
     </div>
   )
 }
