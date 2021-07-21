@@ -68,13 +68,9 @@ export const CodeSandBoxCalendar = () => {
     console.log("クリックしたスケジュールの情報(開始)", e.schedule.start._date)
     console.log("クリックしたスケジュールの情報(開始)", e.schedule.end._date)
 
-    setDefaultStartTime(`${e.schedule.start._date}`)
-    setDefaultEndTime(`${e.schedule.end._date}`)
-
     //２つとも同じ
     const { calendarId, id } = e.schedule
 
-    console.log("e.calendar", e.schedule)
     //取得できる
     console.log("calendarId", calendarId)
     console.log("id", id)
@@ -118,6 +114,9 @@ export const CodeSandBoxCalendar = () => {
   const onBeforeUpdateSchedule = useCallback((e) => {
     console.log("変更する前に", e)
     console.log("変更する前に", e.changes.start._date)
+
+    setDefaultStartTime(`${e.schedule.start._date}`)
+    setDefaultEndTime(`${e.schedule.end._date}`)
 
     setChangedStartTime(`${e.changes.start._date}`)
     setChangedEndTime(`${e.changes.end._date}`)
