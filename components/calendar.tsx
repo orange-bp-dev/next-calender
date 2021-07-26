@@ -1,7 +1,6 @@
 import dynamic from "next/dynamic"
 import React, { useCallback, useRef, useState } from "react"
 import Calendar from "@toast-ui/react-calendar"
-const TUICalendar = dynamic(() => import("@toast-ui/react-calendar"), { ssr: false })
 import { ISchedule, ICalendarInfo } from "tui-calendar"
 
 import "tui-calendar/dist/tui-calendar.css"
@@ -56,9 +55,10 @@ const calendars: ICalendarInfo[] = [
   }
 ]
 
-export const CodeSandBoxCalendar = () => {
+export default function CodeSandBoxCalendar() {
   //ずっとnull
-  const cal = useRef(null)
+  const cal = useRef<Calendar>(null)
+  const calendarRef = React.createRef<Calendar>()
 
   const [unit, setUnit] = useState("month")
   const [defaultStartTime, setDefaultStartTime] = useState("")
@@ -67,19 +67,17 @@ export const CodeSandBoxCalendar = () => {
   const [changedEndTime, setChangedEndTime] = useState("")
 
   const onClickSchedule = useCallback((e) => {
-    console.log("クリックしたスケジュールの情報(開始)", e.schedule.start._date)
-    console.log("クリックしたスケジュールの情報(開始)", e.schedule.end._date)
+    const cal_value = cal
+    console.log("cal_value", cal)
+    const instance = calendarRef.current.getInstance()
+    //null
+    //はいってた
+    console.log("instance--------------onClickSchedule", instance)
+    // console.log("クリックしたスケジュールの情報(開始)", e.schedule.start._date)
+    // console.log("クリックしたスケジュールの情報(開始)", e.schedule.end._date)
 
     //２つとも同じ
     const { calendarId, id } = e.schedule
-
-    //取得できる
-    console.log("calendarId", calendarId)
-    console.log("id", id)
-    //クリックしても初期値のnullが入る
-    console.log("cal", cal)
-    // const el = cal.current.calendarInst.getElement(id, calendarId)
-    // console.log("default-----------", e, el.getBoundingClientRect())
   }, [])
 
   //useState
@@ -114,7 +112,15 @@ export const CodeSandBoxCalendar = () => {
   }, [])
 
   const onBeforeUpdateSchedule = useCallback((e) => {
+    //
+    const instance = calendarRef.current.getInstance()
+    instance.next()
+    console.log("instance--------------onBeforeUpdateSchedule", instance)
+
     console.log("変更する前に", e)
+
+    //null
+    //でも中のObjectにcurrentが入ってた
 
     setDefaultStartTime(`${e.schedule.start._date}`)
     setDefaultEndTime(`${e.schedule.end._date}`)
@@ -173,6 +179,18 @@ export const CodeSandBoxCalendar = () => {
     }
   }
 
+  const toNext = () => {
+    const instance = calendarRef.current.getInstance()
+    console.log("next instance", instance)
+    instance.next()
+  }
+
+  const toPrev = () => {
+    const instance = calendarRef.current.getInstance()
+    console.log("prev instance", instance)
+    instance.prev()
+  }
+
   return (
     <div className="App">
       <h1>Welcome to TOAST Ui Calendar</h1>
@@ -190,9 +208,13 @@ export const CodeSandBoxCalendar = () => {
         <h4>終了{changedEndTime}</h4>
 
         <button>OK</button>
+        <button onClick={() => toNext()}>Next</button>
+        <button onClick={() => toPrev()}>Back</button>
       </div>
       <div style={{}}>
-        <TUICalendar height="800px" view={unit} useCreationPopup={true} useDetailPopup={true} template={templates} calendars={calendars} schedules={schedules} onClickSchedule={onClickSchedule} onBeforeCreateSchedule={onBeforeCreateSchedule} onBeforeDeleteSchedule={onBeforeDeleteSchedule} onBeforeUpdateSchedule={onBeforeUpdateSchedule} />
+        {/* <TUICalendar ref={calendarRef} height="800px" view={unit} useCreationPopup={true} useDetailPopup={true} template={templates} calendars={calendars} schedules={schedules} onClickSchedule={onClickSchedule} onBeforeCreateSchedule={onBeforeCreateSchedule} onBeforeDeleteSchedule={onBeforeDeleteSchedule} onBeforeUpdateSchedule={onBeforeUpdateSchedule} /> */}
+        {/* DynamicImportしなければrefは使える */}
+        <Calendar ref={calendarRef} height="800px" view={unit} useCreationPopup={true} useDetailPopup={true} template={templates} calendars={calendars} schedules={schedules} onClickSchedule={onClickSchedule} onBeforeCreateSchedule={onBeforeCreateSchedule} onBeforeDeleteSchedule={onBeforeDeleteSchedule} onBeforeUpdateSchedule={onBeforeUpdateSchedule} />
       </div>
     </div>
   )
