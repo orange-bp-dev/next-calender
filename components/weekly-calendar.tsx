@@ -59,6 +59,8 @@ const calendars: ICalendarInfo[] = [
 export const CodeSandBoxCalendar = () => {
   //ずっとnull
   const cal = useRef(null)
+
+  const [unit, setUnit] = useState("month")
   const [defaultStartTime, setDefaultStartTime] = useState("")
   const [defaultEndTime, setDefaultEndTime] = useState("")
   const [changedStartTime, setChangedStartTime] = useState("")
@@ -83,7 +85,7 @@ export const CodeSandBoxCalendar = () => {
   //useState
 
   const onBeforeCreateSchedule = useCallback((scheduleData) => {
-    console.log("作成するまえにscheduleData-------------", scheduleData)
+    // console.log("作成するまえにscheduleData-------------", scheduleData)
 
     const schedule = {
       id: String(Math.random()),
@@ -93,7 +95,7 @@ export const CodeSandBoxCalendar = () => {
       end: scheduleData.end,
       category: scheduleData.isAllDay ? "allday" : "time",
       dueDateClass: "",
-      location: scheduleData.location,
+      // location: scheduleData.location,
       raw: {
         class: scheduleData.raw["class"]
       },
@@ -113,7 +115,6 @@ export const CodeSandBoxCalendar = () => {
 
   const onBeforeUpdateSchedule = useCallback((e) => {
     console.log("変更する前に", e)
-    console.log("変更する前に", e.changes.start._date)
 
     setDefaultStartTime(`${e.schedule.start._date}`)
     setDefaultEndTime(`${e.schedule.end._date}`)
@@ -136,7 +137,6 @@ export const CodeSandBoxCalendar = () => {
     const date = new Date(time)
     const h = date.getHours()
     const m = date.getMinutes()
-
     return `${h}:${m}`
   }
 
@@ -158,7 +158,7 @@ export const CodeSandBoxCalendar = () => {
       } else if (schedule.attendees.length) {
         html.push('<span class="calendar-font-icon ic-user-b"></span>')
       } else if (schedule.location) {
-        html.push('<span class="calendar-font-icon ic-location-b"></span>')
+        // html.push('<span class="calendar-font-icon ic-location-b"></span>')
       }
       html.push(" " + schedule.title)
     }
@@ -172,7 +172,6 @@ export const CodeSandBoxCalendar = () => {
       return _getTimeTemplate(schedule, false)
     }
   }
-  const [unit, setUnit] = useState("month")
 
   return (
     <div className="App">
@@ -180,21 +179,20 @@ export const CodeSandBoxCalendar = () => {
       <button onClick={() => setUnit("day")}>Daily</button>
       <button onClick={() => setUnit("week")}>Weekly</button>
       <button onClick={() => setUnit("month")}>Monthly</button>
-      <div style={{ float: "right" }}>
-        <div>
-          <h2>変更前</h2>
-          <h4>開始{defaultStartTime}</h4>
-          <h4>終了{defaultEndTime}</h4>
 
-          <h2>変更後</h2>
-          <h4>開始{changedStartTime}</h4>
-          <h4>終了{changedEndTime}</h4>
+      <div>
+        <h2>変更前</h2>
+        <h4>開始{defaultStartTime}</h4>
+        <h4>終了{defaultEndTime}</h4>
 
-          <button>OK</button>
-        </div>
-        <div style={{ width: "800px", height: "500px" }}>
-          <TUICalendar height="300px" view={unit} useCreationPopup={true} useDetailPopup={true} template={templates} calendars={calendars} schedules={schedules} onClickSchedule={onClickSchedule} onBeforeCreateSchedule={onBeforeCreateSchedule} onBeforeDeleteSchedule={onBeforeDeleteSchedule} onBeforeUpdateSchedule={onBeforeUpdateSchedule} />
-        </div>
+        <h2>変更後</h2>
+        <h4>開始{changedStartTime}</h4>
+        <h4>終了{changedEndTime}</h4>
+
+        <button>OK</button>
+      </div>
+      <div style={{}}>
+        <TUICalendar height="800px" view={unit} useCreationPopup={true} useDetailPopup={true} template={templates} calendars={calendars} schedules={schedules} onClickSchedule={onClickSchedule} onBeforeCreateSchedule={onBeforeCreateSchedule} onBeforeDeleteSchedule={onBeforeDeleteSchedule} onBeforeUpdateSchedule={onBeforeUpdateSchedule} />
       </div>
     </div>
   )
