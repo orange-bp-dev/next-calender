@@ -1,11 +1,13 @@
 import dynamic from "next/dynamic"
-import React, { useCallback, useRef, useState } from "react"
+import React, { useCallback, useReducer, useRef, useState } from "react"
 import Calendar from "@toast-ui/react-calendar"
 import { ISchedule, ICalendarInfo } from "tui-calendar"
+import dayjs from "dayjs"
 
 import "tui-calendar/dist/tui-calendar.css"
 import "tui-date-picker/dist/tui-date-picker.css"
 import "tui-time-picker/dist/tui-time-picker.css"
+
 // import "./styles.css"
 
 const start = new Date()
@@ -41,23 +43,23 @@ const calendars: ICalendarInfo[] = [
     id: "1",
     name: "My Calendar",
     color: "#ffffff",
-    bgColor: "#9e5fff",
-    dragBgColor: "#9e5fff",
-    borderColor: "#9e5fff"
+    bgColor: "#5fc4ff",
+    dragBgColor: "#5fc4ff",
+    borderColor: "#5fc4ff"
   },
   {
     id: "2",
     name: "Company",
     color: "#ffffff",
-    bgColor: "#00a9ff",
-    dragBgColor: "#00a9ff",
-    borderColor: "#00a9ff"
+    bgColor: "#8bf7d7",
+    dragBgColor: "#8bf7d7",
+    borderColor: "#8bf7d7"
   }
 ]
 
 export default function CodeSandBoxCalendar() {
   //ずっとnull
-  const cal = useRef<Calendar>(null)
+  const cal = useRef<Calendar>()
   const calendarRef = React.createRef<Calendar>()
 
   const [unit, setUnit] = useState("month")
@@ -66,13 +68,19 @@ export default function CodeSandBoxCalendar() {
   const [changedStartTime, setChangedStartTime] = useState("")
   const [changedEndTime, setChangedEndTime] = useState("")
 
+  const reducer = () => {}
+
+  let initialState
+
+  const [state, dispatch] = useReducer(reducer, initialState)
+
   const onClickSchedule = useCallback((e) => {
     const cal_value = cal
     console.log("cal_value", cal)
     const instance = calendarRef.current.getInstance()
     //null
     //はいってた
-    console.log("instance--------------onClickSchedule", instance)
+    console.log("instance--------------onClickSchedule", instance.getDate())
     // console.log("クリックしたスケジュールの情報(開始)", e.schedule.start._date)
     // console.log("クリックしたスケジュールの情報(開始)", e.schedule.end._date)
 
@@ -104,10 +112,7 @@ export default function CodeSandBoxCalendar() {
   }, [])
 
   const onBeforeDeleteSchedule = useCallback((res) => {
-    console.log("削除する前に res", res)
-
     const { id, calendarId } = res.schedule
-
     // cal.current.calendarInst.deleteSchedule(id, calendarId)
   }, [])
 
@@ -139,46 +144,6 @@ export default function CodeSandBoxCalendar() {
     // cal.current.calendarInst.updateSchedule(schedule.id, schedule.calendarId, changes)
   }, [])
 
-  function _getFormattedTime(time) {
-    const date = new Date(time)
-    const h = date.getHours()
-    const m = date.getMinutes()
-    return `${h}:${m}`
-  }
-
-  function _getTimeTemplate(schedule, isAllDay) {
-    var html = []
-
-    if (!isAllDay) {
-      html.push("<strong>" + _getFormattedTime(schedule.start) + "</strong> ")
-    }
-
-    if (schedule.isPrivate) {
-      html.push('<span class="calendar-font-icon ic-lock-b"></span>')
-      html.push(" Private")
-    } else {
-      if (schedule.isReadOnly) {
-        html.push('<span class="calendar-font-icon ic-readonly-b"></span>')
-      } else if (schedule.recurrenceRule) {
-        html.push('<span class="calendar-font-icon ic-repeat-b"></span>')
-      } else if (schedule.attendees.length) {
-        html.push('<span class="calendar-font-icon ic-user-b"></span>')
-      } else if (schedule.location) {
-        // html.push('<span class="calendar-font-icon ic-location-b"></span>')
-      }
-      html.push(" " + schedule.title)
-    }
-
-    return html.join("")
-  }
-
-  const templates = {
-    time: function(schedule) {
-      console.log("templatesレンダリング時に表示", schedule)
-      return _getTimeTemplate(schedule, false)
-    }
-  }
-
   const toNext = () => {
     const instance = calendarRef.current.getInstance()
     console.log("next instance", instance)
@@ -188,8 +153,84 @@ export default function CodeSandBoxCalendar() {
   const toPrev = () => {
     const instance = calendarRef.current.getInstance()
     console.log("prev instance", instance)
+
+    let monthAfterMove: number
+    let yearAfterMove: number
+
+    if (true) {
+      monthAfterMove =
+        dayjs(instance.getDateRangeEnd().getTime())
+          .add(-40, "day")
+          .month() + 1
+      yearAfterMove = dayjs(instance.getDateRangeEnd().getTime())
+        .add(-40, "day")
+        .year()
+      const monthAfterMoveDate = dayjs(instance.getDateRangeEnd().getTime()).add(-40, "day")
+      if (monthAfterMoveDate.isBefore(dayjs(), "month")) {
+        // 当月以前の月の作成はできないのでreturn;
+        return console.log("error")
+      }
+
+      // dispatch({ type: "SET_CURRENT_MONTH", payload: { currentMonth: monthAfterMove } })
+      // dispatch({ type: "SET_CURRENT_YEAR", payload: { currentYear: yearAfterMove } })
+    }
+
+    if (false) {
+      monthAfterMove =
+        dayjs(instance.getDateRangeStart().getTime())
+          .add(-7, "day")
+          .month() + 1
+      yearAfterMove = dayjs(instance.getDateRangeStart().getTime())
+        .add(-7, "day")
+        .year()
+      const monthAfterMoveDate = dayjs(instance.getDateRangeEnd().getTime()).add(-7, "day")
+      if (monthAfterMoveDate.isBefore(dayjs())) {
+        // 当月以前の月の作成はできないのでreturn;
+        return console.log("error")
+      }
+    }
     instance.prev()
   }
+
+  function _getFormattedTime(time) {
+    const date = new Date(time)
+    const h = date.getHours()
+    const m = date.getMinutes()
+    return `${h}:${m}`
+  }
+
+  // function _getTimeTemplate(schedule, isAllDay) {
+  //   var html = []
+
+  //   if (!isAllDay) {
+  //     html.push("<strong>" + _getFormattedTime(schedule.start) + "</strong> ")
+  //   }
+
+  //   if (schedule.isPrivate) {
+  //     html.push('<span class="calendar-font-icon ic-lock-b"></span>')
+  //     html.push(" Private")
+  //   } else {
+  //     if (schedule.isReadOnly) {
+  //       html.push('<span class="calendar-font-icon ic-readonly-b"></span>')
+  //     } else if (schedule.recurrenceRule) {
+  //       html.push('<span class="calendar-font-icon ic-repeat-b"></span>')
+  //     } else if (schedule.attendees.length) {
+  //       html.push('<span class="calendar-font-icon ic-user-b"></span>')
+  //     } else if (schedule.location) {
+  //       // html.push('<span class="calendar-font-icon ic-location-b"></span>')
+  //     }
+  //     html.push(" " + schedule.title)
+  //   }
+
+  //   return html.join("")
+  // }
+
+  // const templates = {
+  //   time: function(schedule) {
+  //     console.log("templatesレンダリング時に表示", schedule)
+  //     return _getTimeTemplate(schedule, false)
+  //   }
+  // }
 
   return (
     <div className="App">
@@ -214,7 +255,29 @@ export default function CodeSandBoxCalendar() {
       <div style={{}}>
         {/* <TUICalendar ref={calendarRef} height="800px" view={unit} useCreationPopup={true} useDetailPopup={true} template={templates} calendars={calendars} schedules={schedules} onClickSchedule={onClickSchedule} onBeforeCreateSchedule={onBeforeCreateSchedule} onBeforeDeleteSchedule={onBeforeDeleteSchedule} onBeforeUpdateSchedule={onBeforeUpdateSchedule} /> */}
         {/* DynamicImportしなければrefは使える */}
-        <Calendar ref={calendarRef} height="800px" view={unit} useCreationPopup={true} useDetailPopup={true} template={templates} calendars={calendars} schedules={schedules} onClickSchedule={onClickSchedule} onBeforeCreateSchedule={onBeforeCreateSchedule} onBeforeDeleteSchedule={onBeforeDeleteSchedule} onBeforeUpdateSchedule={onBeforeUpdateSchedule} />
+        <Calendar
+          ref={calendarRef}
+          height="800px"
+          view={unit}
+          month={{
+            daynames: ["日", "月", "火", "水", "木", "金", "土"],
+            isAlways6Week: false
+          }}
+          week={{
+            daynames: ["日", "月", "火", "水", "木", "金", "土"],
+            showTimezoneCollapseButton: false,
+            timezonesCollapsed: true,
+            hourStart: 9,
+            hourEnd: 17
+          }}
+          useCreationPopup={false}
+          useDetailPopup={true}
+          disableClick={false}
+          // template={templates}
+          calendars={calendars}
+          schedules={schedules}
+          onClickSchedule={onClickSchedule}
+        />
       </div>
     </div>
   )
